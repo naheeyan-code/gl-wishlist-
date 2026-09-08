@@ -39,12 +39,8 @@ One file serves all three via URL routing.
 - **User Management** (admins): magic-link invites, role changes, remove members.
 - **Send Client Invite** (admin/sales): emails a client the form link + access phrase.
 
-**Roles:** `admin`, `sales_am`, `project_manager`, `csm`, plus a hidden **super admin** (sole maintainer).
+**Roles:** `admin`, `sales_am`, `project_manager`, `csm`.
 
-**Super admin (sole maintainer)**
-- Identified by `SUPER_ADMIN_EMAIL` (UI) and an `is_super` flag (database).
-- **Super Admin** panel visible only to the maintainer; account hidden from User Management and protected at the database level (see §6).
-- Login accepts the maintainer's private email (e.g. Gmail) in addition to `@getlevrg.com`.
 
 ## 4. Configuration (in `index.html`)
 
