@@ -41,7 +41,6 @@ One file serves all three via URL routing.
 
 **Roles:** `admin`, `sales_am`, `project_manager`, `csm`.
 
-
 ## 4. Configuration (in `index.html`)
 
 Near the top of the script block:
@@ -50,9 +49,6 @@ Near the top of the script block:
 |----------|---------|
 | `SUPABASE_URL` / publishable key | Supabase project (publishable key is safe client-side) |
 | `CLIENT_PAGE_PASSWORD` | Access phrase for the customer form. Current: `GLwishlist@Submit` |
-| `SUPER_ADMIN_EMAIL` | The sole-maintainer account email. **Set to your real address** (Gmail is fine) |
-
-`SUPER_ADMIN_EMAIL` must match the email flagged `is_super` in the database (§6).
 
 ## 5. Database — SQL migrations
 
@@ -63,7 +59,6 @@ Run once each in the Supabase SQL editor, **in this order**. All are idempotent.
 3. **`wishlist-share-links.sql`** — adds `wishlists.share_token` + `get_shared_wishlist(token)` (login-only) for read-only share links.
 4. **`client-invites.sql`** — `client_invites` table + Resend trigger that emails clients the form link + phrase.
 5. **`wishlist-email-trigger.sql`** — emails admins on each new wishlist via Resend.
-6. **`super-admin-protection.sql`** — adds `profiles.is_super`, restrictive RLS to hide/lock the maintainer row, and a trigger so only the service role can set the flag. **Edit the final `update … where lower(email) = …` to your Gmail before running.**
 
 > Rule of thumb: if a front-end change starts reading a new column, add the column in Supabase *first*, or the whole query fails and lists read as empty.
 
@@ -89,12 +84,11 @@ Set these once (used by the email triggers):
 
 ## 8. Deploy — from scratch
 
-1. Set `SUPABASE_URL`, key, `CLIENT_PAGE_PASSWORD`, and `SUPER_ADMIN_EMAIL` in `index.html`.
+1. Set `SUPABASE_URL`, key, and `CLIENT_PAGE_PASSWORD` in `index.html`.
 2. Run the SQL migrations (§5) in order; set Vault secrets (§6).
 3. Configure Auth SMTP (§7).
-4. Create the maintainer account: **Authentication → Users → Add user** (your Gmail + password), then run the `update … is_super = true` line for that email.
-5. Deploy `index.html` at the site **root** (rename/drag the single file). Admin = `/`, form = `/?form`.
-6. Embed the form in WordPress (§9).
+4. Deploy `index.html` at the site **root** (rename/drag the single file). Admin = `/`, form = `/?form`.
+5. Embed the form in WordPress (§9).
 
 **Applying an update:** if the change is front-end only, deploy `index.html` and hard-refresh. If it references a new column/table, run that migration first.
 
@@ -124,8 +118,7 @@ Paste into a **Custom HTML** block; change both URLs for a custom domain.
 
 - The publishable key is safe client-side; all enforcement is **RLS**, not the browser.
 - No service key ever ships in `index.html`. Server-side actions (invites, notifications) run from DB triggers using Vault secrets.
-- The maintainer account is hidden and locked at the **database** level (restrictive RLS + protected `is_super`), not just the UI.
-- Keep **2FA** on the maintainer email — it's the highest-privilege account.
+- Enable **2FA** on admin accounts.
 - Rotate the Resend API key if it was ever shared, then update the `RESEND_API_KEY` Vault secret.
 
 ## 11. Editing the code
@@ -140,5 +133,5 @@ node -e "const b=require('@babel/standalone'),fs=require('fs');const h=fs.readFi
 ## 12. File manifest
 
 - `index.html` — the entire app.
-- `schema-v5.sql`, `wishlist-soft-delete.sql`, `wishlist-share-links.sql`, `client-invites.sql`, `wishlist-email-trigger.sql`, `super-admin-protection.sql` — database migrations.
+- `schema-v5.sql`, `wishlist-soft-delete.sql`, `wishlist-share-links.sql`, `client-invites.sql`, `wishlist-email-trigger.sql` — database migrations.
 - `gl-wishlist-wordpress-embed.html` — the embed snippet.
